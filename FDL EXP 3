@@ -1,0 +1,45 @@
+import pandas as pd
+import numpy as np
+data = pd.read_csv('your_file.csv')  
+print(data.head())
+print(f"Dataset shape: {data.shape}")
+print("Unique classes and their counts:")
+print(data['label'].value_counts())
+num_classes = data['label'].nunique()
+print(f"Number of unique classes: {num_classes}")
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelBinarizer
+x = data.iloc[:, 1:].values  
+y = data.iloc[:, 0].values   
+x = x / 255.0
+x = x.reshape(-1, 28, 28, 1)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
+lb = LabelBinarizer()
+y_train = lb.fit_transform(y_train)
+y_test = lb.transform(y_test)
+print("Data preprocessing complete!")
+import tensorflow as tf
+from tensorflow.keras import layers, models
+model = models.Sequential([
+    layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
+    layers.MaxPooling2D((2, 2)),  
+    layers.Conv2D(64, (3, 3), activation='relu'),
+    layers.MaxPooling2D((2, 2)),  
+    layers.Conv2D(128, (3, 3), activation='relu'),
+    layers.Flatten(),
+    layers.Dense(128, activation='relu'),
+    layers.Dense(24, activation='softmax')
+])
+model.compile(optimizer='adam', 
+              loss='sparse_categorical_crossentropy', 
+              metrics=['accuracy'])
+history = model.fit(x_train, y_train, epochs=10, validation_data=(x_val, y_val))
+model.summary()
+import matplotlib.pyplot as plt
+sample_image = x_val[0].reshape(1, 28, 28, 1)
+prediction = model.predict(sample_image)
+predicted_label = lb.inverse_transform([prediction.argmax()])[0]
+plt.imshow(x_val[0].reshape(28, 28), cmap='gray')
+plt.title(f"Predicted Label: {predicted_label}")
+plt.show()
