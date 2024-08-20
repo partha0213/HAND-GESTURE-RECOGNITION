@@ -5,35 +5,23 @@ from tensorflow.keras import layers, models
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelBinarizer
 import matplotlib.pyplot as plt
-
-# Load data
-data = pd.read_csv(r"C:\Users\NAVEENKARTHICK\Downloads\sign_mnist_test.csv")
+data = pd.read_csv('enter the csv file path')
 print(data.head())
 print(f"Dataset shape: {data.shape}")
 print("Unique classes and their counts:")
 print(data['label'].value_counts())
 num_classes = data['label'].nunique()
 print(f"Number of unique classes: {num_classes}")
-
-# Data preprocessing
 x = data.iloc[:, 1:].values
 y = data.iloc[:, 0].values
 x = x / 255.0
 x = x.reshape(-1, 28, 28, 1)
-
-# Split data into training and testing sets
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
-
-# Further split the training data into training and validation sets
 x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
-
-# Binarize labels
 lb = LabelBinarizer()
 y_train = lb.fit_transform(y_train)
 y_val = lb.transform(y_val)
 y_test = lb.transform(y_test)
-
-# Build model
 model = models.Sequential([
     layers.Conv2D(32, (3, 3), activation='relu', input_shape=(28, 28, 1)),
     layers.MaxPooling2D((2, 2)),
@@ -44,29 +32,15 @@ model = models.Sequential([
     layers.Dense(128, activation='relu'),
     layers.Dense(num_classes, activation='softmax')
 ])
-
-# Compile model
 model.compile(optimizer='adam',
               loss='categorical_crossentropy',
               metrics=['accuracy'])
-
-# Train model
 history = model.fit(x_train, y_train, epochs=10, validation_data=(x_val, y_val))
-
-# Model summary
 model.summary()
-
-# Predict on a sample image from the validation set
 sample_image = x_val[0].reshape(1, 28, 28, 1)
 prediction = model.predict(sample_image)
-
-# Get the predicted class index
 predicted_index = np.argmax(prediction, axis=1)[0]
-
-# Convert the predicted index to the original label
 predicted_label = lb.classes_[predicted_index]
-
-# Display the result
 plt.imshow(x_val[0].reshape(28, 28), cmap='gray')
 plt.title(f"Predicted Label: {predicted_label}")
 plt.show()
